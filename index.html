@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 3: Energy Data Visualization - Group 14</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script type="module" src="Scripts/main.js?v=1"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @theme {
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+            --color-blue-50: #eff6ff;
+            --color-blue-100: #dbeafe;
+            --color-blue-500: #3b82f6;
+            --color-blue-600: #2563eb;
+            --color-blue-700: #1d4ed8;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            background: rgba(17, 24, 39, 0.95);
+            color: white;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .axis-label {
+            font-size: 0.75rem;
+            fill: #6b7280;
+            font-weight: 500;
+        }
+        
+        .tick text {
+            font-size: 0.7rem;
+            fill: #9ca3af;
+        }
+        
+        .grid-line {
+            stroke: #f3f4f6;
+            stroke-opacity: 1;
+            shape-rendering: crispEdges;
+        }
+        
+        .chart-line {
+            fill: none;
+            stroke: #3b82f6;
+            stroke-width: 2;
+        }
+        
+        .chart-area {
+            fill: rgba(59, 130, 246, 0.1);
+        }
+        
+        .chart-bar {
+            fill: #3b82f6;
+        }
+        
+        .chart-bar:hover {
+            fill: #2563eb;
+        }
+        
+        .radar-line {
+            fill: rgba(59, 130, 246, 0.2);
+            stroke: #3b82f6;
+            stroke-width: 2;
+        }
+        
+        .radar-dot {
+            fill: #3b82f6;
+            stroke: white;
+            stroke-width: 2;
+        }
+        
+        .heatmap-cell:hover {
+            stroke: #374151;
+            stroke-width: 1.5;
+        }
+
+        /* Enhanced Chat Styles */
+        .chat-message {
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .chat-input-focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2" data-en="Step 3: Energy Data Visualization" data-de="Schritt 3: Energiedaten-Visualisierung">Step 3: Energy Data Visualization</h1>
+                        <p class="text-gray-600" data-en="Group 14 - Foundations of Networked Systems" data-de="Gruppe 14 - Grundlagen vernetzter Systeme">Group 14 - Foundations of Networked Systems</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="languageToggle" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            <span data-en="Deutsch" data-de="English">Deutsch</span>
+                        </button>
+                        <button id="printButton" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" data-en="Print Report" data-de="Bericht drucken">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            <span data-en="Print Report" data-de="Bericht drucken">Print Report</span>
+                        </button>
+                        <div class="relative">
+                            <input type="file" id="fileInput" accept=".xml" class="hidden">
+                            <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors" data-en="Load XML Data" data-de="XML-Daten laden">Load XML Data</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dataset Buttons -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="text-sm font-medium text-gray-700 mr-3" data-en="Sample Datasets:" data-de="Beispieldatensätze:">Sample Datasets:</span>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" onclick="loadPreloadedXML('Data/myenergydata_output.xml', 'AT')">Austria</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" onclick="loadPreloadedXML('Data/data_portugal.xml', 'PT')">Portugal</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" onclick="loadPreloadedXML('Data/data_germany.xml', 'DE')">Germany</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" onclick="loadPreloadedXML('Data/data_estonia.xml', 'EE')">Estonia</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Configuration Panel -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4" data-en="Display Timezone" data-de="Anzeige-Zeitzone">Display Timezone</h3>
+                    <div class="space-y-3">
+                        <div class="relative">
+                            <select id="timezoneSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                                <optgroup label="Popular Timezones">
+                                    <option value="UTC">UTC (Coordinated Universal Time) (UTC+0)</option>
+                                    <option value="GMT">GMT (Greenwich Mean Time) (UTC+0)</option>
+                                    <option value="CET">CET (Central European Time) (UTC+1)</option>
+                                    <option value="EET">EET (Eastern European Time) (UTC+2)</option>
+                                    <option value="EST">EST (Eastern Standard Time) (UTC-5)</option>
+                                    <option value="PST">PST (Pacific Standard Time) (UTC-8)</option>
+                                    <option value="JST">JST (Japan Standard Time) (UTC+9)</option>
+                                    <option value="IST">IST (India Standard Time) (UTC+5.5)</option>
+                                </optgroup>
+                                <optgroup label="Americas">
+                                    <option value="EST">EST (Eastern Standard Time) (UTC-5)</option>
+                                    <option value="CST">CST (Central Standard Time) (UTC-6)</option>
+                                    <option value="MST">MST (Mountain Standard Time) (UTC-7)</option>
+                                    <option value="PST">PST (Pacific Standard Time) (UTC-8)</option>
+                                    <option value="AST">AST (Atlantic Standard Time) (UTC-4)</option>
+                                    <option value="NST">NST (Newfoundland Standard Time) (UTC-3.5)</option>
+                                    <option value="HST">HST (Hawaii Standard Time) (UTC-10)</option>
+                                    <option value="AKST">AKST (Alaska Standard Time) (UTC-9)</option>
+                                    <option value="BRT">BRT (Brasília Time) (UTC-3)</option>
+                                    <option value="ART">ART (Argentina Time) (UTC-3)</option>
+                                    <option value="CLT">CLT (Chile Standard Time) (UTC-3)</option>
+                                    <option value="PET">PET (Peru Time) (UTC-5)</option>
+                                </optgroup>
+                                <optgroup label="Europe">
+                                    <option value="UTC">UTC (Coordinated Universal Time) (UTC+0)</option>
+                                    <option value="GMT">GMT (Greenwich Mean Time) (UTC+0)</option>
+                                    <option value="WET">WET (Western European Time) (UTC+0)</option>
+                                    <option value="CET">CET (Central European Time) (UTC+1)</option>
+                                    <option value="EET">EET (Eastern European Time) (UTC+2)</option>
+                                    <option value="WEST">WEST (Western European Summer Time) (UTC+1)</option>
+                                    <option value="CEST">CEST (Central European Summer Time) (UTC+2)</option>
+                                    <option value="EEST">EEST (Eastern European Summer Time) (UTC+3)</option>
+                                    <option value="BST_UK">BST (British Summer Time) (UTC+1)</option>
+                                </optgroup>
+                                <optgroup label="Asia">
+                                    <option value="JST">JST (Japan Standard Time) (UTC+9)</option>
+                                    <option value="CST_CN">CST (China Standard Time) (UTC+8)</option>
+                                    <option value="IST">IST (India Standard Time) (UTC+5.5)</option>
+                                    <option value="KST">KST (Korea Standard Time) (UTC+9)</option>
+                                    <option value="GST">GST (Gulf Standard Time) (UTC+4)</option>
+                                    <option value="PKT">PKT (Pakistan Standard Time) (UTC+5)</option>
+                                    <option value="BST">BST (Bangladesh Standard Time) (UTC+6)</option>
+                                    <option value="ICT">ICT (Indochina Time) (UTC+7)</option>
+                                    <option value="MSK">MSK (Moscow Standard Time) (UTC+3)</option>
+                                </optgroup>
+                                <optgroup label="Oceania">
+                                    <option value="AEST">AEST (Australian Eastern Standard Time) (UTC+10)</option>
+                                    <option value="ACST">ACST (Australian Central Standard Time) (UTC+9.5)</option>
+                                    <option value="AWST">AWST (Australian Western Standard Time) (UTC+8)</option>
+                                    <option value="NZST">NZST (New Zealand Standard Time) (UTC+12)</option>
+                                    <option value="FJT">FJT (Fiji Time) (UTC+12)</option>
+                                    <option value="CHST">CHST (Chamorro Standard Time) (UTC+10)</option>
+                                    <option value="CHUT">CHUT (Chuuk Time) (UTC+10)</option>
+                                    <option value="PONT">PONT (Pohnpei Standard Time) (UTC+11)</option>
+                                    <option value="KOST">KOST (Kosrae Time) (UTC+11)</option>
+                                    <option value="MHT">MHT (Marshall Islands Time) (UTC+12)</option>
+                                    <option value="WAKT">WAKT (Wake Island Time) (UTC+12)</option>
+                                </optgroup>
+                                <optgroup label="Africa">
+                                    <option value="SAST">SAST (South Africa Standard Time) (UTC+2)</option>
+                                    <option value="EAT">EAT (East Africa Time) (UTC+3)</option>
+                                    <option value="WAT">WAT (West Africa Time) (UTC+1)</option>
+                                </optgroup>
+                                <optgroup label="Daylight Saving Time">
+                                    <option value="EDT">EDT (Eastern Daylight Time) (UTC-4)</option>
+                                    <option value="CDT">CDT (Central Daylight Time) (UTC-5)</option>
+                                    <option value="MDT">MDT (Mountain Daylight Time) (UTC-6)</option>
+                                    <option value="PDT">PDT (Pacific Daylight Time) (UTC-7)</option>
+                                    <option value="ADT">ADT (Atlantic Daylight Time) (UTC-3)</option>
+                                    <option value="NDT">NDT (Newfoundland Daylight Time) (UTC-2.5)</option>
+                                    <option value="AKDT">AKDT (Alaska Daylight Time) (UTC-8)</option>
+                                    <option value="HADT">HADT (Hawaii-Aleutian Daylight Time) (UTC-9)</option>
+                                    <option value="BST_UK">BST (British Summer Time) (UTC+1)</option>
+                                    <option value="CEST">CEST (Central European Summer Time) (UTC+2)</option>
+                                    <option value="EEST">EEST (Eastern European Summer Time) (UTC+3)</option>
+                                    <option value="WEST">WEST (Western European Summer Time) (UTC+1)</option>
+                                    <option value="BRST">BRST (Brasília Summer Time) (UTC-2)</option>
+                                    <option value="ARST">ARST (Argentina Summer Time) (UTC-2)</option>
+                                    <option value="CLST">CLST (Chile Summer Time) (UTC-2)</option>
+                                    <option value="PEST">PEST (Peru Summer Time) (UTC-4)</option>
+                                    <option value="CHADT">CHADT (Chatham Daylight Time) (UTC+13.75)</option>
+                                    <option value="NZDT">NZDT (New Zealand Daylight Time) (UTC+13)</option>
+                                    <option value="AEDT">AEDT (Australian Eastern Daylight Time) (UTC+11)</option>
+                                    <option value="ACDT">ACDT (Australian Central Daylight Time) (UTC+10.5)</option>
+                                    <option value="AWDT">AWDT (Australian Western Daylight Time) (UTC+9)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="detectTimezoneBtn" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors" data-en="Detect My Timezone" data-de="Meine Zeitzone erkennen">Detect My Timezone</button>
+                            <span id="currentTimezoneDisplay" class="text-sm text-gray-600"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="dataInfo" class="bg-blue-50 border border-blue-200 rounded-lg p-4 hidden">
+                    <h4 class="text-sm font-semibold text-blue-900 mb-2" data-en="Loaded Data" data-de="Geladene Daten">Loaded Data</h4>
+                    <p class="text-sm text-blue-800"><span data-en="File:" data-de="Datei:">File:</span> <span id="loadedFileName" class="font-medium">-</span></p>
+                    <p class="text-sm text-blue-800"><span data-en="Original Timezone:" data-de="Ursprüngliche Zeitzone:">Original Timezone:</span> <span id="originalFileTimezone" class="font-medium">-</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500" data-en="Total Energy" data-de="Gesamtenergie">Total Energy</p>
+                        <p id="totalEnergy" class="text-2xl font-semibold text-gray-900">0 kWh</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500" data-en="Peak Power" data-de="Spitzenleistung">Peak Power</p>
+                        <p id="peakPower" class="text-2xl font-semibold text-gray-900">0 kW</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500" data-en="Average Power" data-de="Durchschnittsleistung">Average Power</p>
+                        <p id="avgPower" class="text-2xl font-semibold text-gray-900">0 kW</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500" data-en="Data Points" data-de="Datenpunkte">Data Points</p>
+                        <p id="dataPoints" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Timeline Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900" data-en="Load Duration Curve" data-de="Lastdauer-Kurve">Load Duration Curve</h3>
+                    <p class="text-sm text-gray-600 mt-1" data-en="Power distribution and optimization potential" data-de="Leistungsverteilung und Optimierungspotenzial">Power distribution and optimization potential</p>
+                </div>
+                <div id="lineChart" class="h-80"></div>
+                <div id="lineInsight" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700" data-en="Load data to see insights" data-de="Daten laden für Einblicke">Load data to see insights</div>
+            </div>
+
+            <!-- Daily Totals Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900" data-en="Daily Totals" data-de="Tägliche Summen">Daily Totals</h3>
+                    <p class="text-sm text-gray-600 mt-1" data-en="Energy consumed per day" data-de="Energie pro Tag verbraucht">Energy consumed per day</p>
+                </div>
+                <div id="barChart" class="h-80"></div>
+                <div id="barInsight" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700" data-en="Load data to see insights" data-de="Daten laden für Einblicke">Load data to see insights</div>
+            </div>
+
+            <!-- Hourly Profile Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900" data-en="Hourly Distribution" data-de="Stündliche Verteilung">Hourly Distribution</h3>
+                    <p class="text-sm text-gray-600 mt-1" data-en="Statistical distribution by hour with outliers" data-de="Statistische Verteilung nach Stunde mit Ausreißern">Statistical distribution by hour with outliers</p>
+                </div>
+                <div id="boxPlotChart" class="h-80 flex items-center justify-center"></div>
+                <div id="boxPlotInsight" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700" data-en="Load data to see insights" data-de="Daten laden für Einblicke">Load data to see insights</div>
+            </div>
+
+            <!-- Heatmap Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900" data-en="Usage Heatmap" data-de="Verbrauchs-Heatmap">Usage Heatmap</h3>
+                    <p class="text-sm text-gray-600 mt-1" data-en="Intensity by day and hour" data-de="Intensität nach Tag und Stunde">Intensity by day and hour</p>
+                </div>
+                <div id="heatmapChart" class="h-80"></div>
+                <div id="heatmapInsight" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700" data-en="Load data to see insights" data-de="Daten laden für Einblicke">Load data to see insights</div>
+            </div>
+        </div>
+
+        <!-- Energy Flow Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900" data-en="Energy Flow Analysis" data-de="Energiefluss-Analyse">Energy Flow Analysis</h3>
+                <p class="text-sm text-gray-600 mt-1" data-en="Energy distribution from source to usage patterns" data-de="Energieverteilung von Quelle zu Nutzungsmustern">Energy distribution from source to usage patterns</p>
+            </div>
+            <div id="sankeyChart" class="h-96"></div>
+            <div id="sankeyInsight" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700" data-en="Load data to see insights" data-de="Daten laden für Einblicke">Load data to see insights</div>
+        </div>
+
+        <!-- Enhanced Energy Data Assistant -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div class="flex items-center mb-8">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2" data-en="Energy Data Assistant" data-de="Energie-Daten-Assistent">Energy Data Assistant</h3>
+                    <p class="text-sm text-gray-600" data-en="Ask questions about your energy data and get intelligent insights" data-de="Stellen Sie Fragen zu Ihren Energiedaten und erhalten Sie intelligente Einblicke">Ask questions about your energy data and get intelligent insights</p>
+                </div>
+            </div>
+            
+            <div id="chatContainer" class="space-y-6">
+                <!-- Enhanced Chat Messages Container -->
+                <div id="chatMessages" class="h-80 overflow-y-auto bg-gray-50 rounded-lg border border-gray-200 chat-scrollbar">
+                    <div class="p-8">
+                        <div class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-200">
+                                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-600 text-sm font-medium mb-3" data-en="Start a conversation about your energy data..." data-de="Starten Sie ein Gespräch über Ihre Energiedaten...">Start a conversation about your energy data...</p>
+                                <p class="text-gray-400 text-xs leading-relaxed" data-en="Try asking: 'When do I use the most energy?' or 'Show me optimization opportunities'" data-de="Versuchen Sie zu fragen: 'Wann verbrauche ich am meisten Energie?' oder 'Zeigen Sie mir Optimierungsmöglichkeiten'">Try asking: "When do I use the most energy?" or "Show me optimization opportunities"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Chat Input -->
+                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                    <div class="flex gap-3 mb-4">
+                        <div class="flex-1 relative">
+                            <input 
+                                type="text" 
+                                id="chatInput" 
+                                placeholder="Ask about energy patterns, optimization, or trends..." 
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500" 
+                                data-en-placeholder="Ask about energy patterns, optimization, or trends..." 
+                                data-de-placeholder="Fragen Sie nach Energiemustern, Optimierung oder Trends..."
+                            >
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <button 
+                            id="sendChatBtn" 
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
+                            data-en="Send" 
+                            data-de="Senden"
+                        >
+                            Send
+                        </button>
+                        <button 
+                            id="clearChatBtn" 
+                            class="px-4 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium" 
+                            data-en="Clear" 
+                            data-de="Löschen"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Action Buttons -->
+                    <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+                        <span class="text-xs font-medium text-gray-500 mr-2 py-1.5" data-en="Quick questions:" data-de="Schnelle Fragen:">Quick questions:</span>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" onclick="document.getElementById('chatInput').value='What are my peak energy consumption hours?'">
+                            <span data-en="Peak Hours" data-de="Spitzenstunden">Peak Hours</span>
+                        </button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" onclick="document.getElementById('chatInput').value='How can I reduce my energy consumption?'">
+                            <span data-en="Energy Savings" data-de="Energieeinsparung">Energy Savings</span>
+                        </button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" onclick="document.getElementById('chatInput').value='What is my load factor and how can I improve it?'">
+                            <span data-en="Load Factor" data-de="Lastfaktor">Load Factor</span>
+                        </button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" onclick="document.getElementById('chatInput').value='Show me unusual energy consumption patterns'">
+                            <span data-en="Anomalies" data-de="Anomalien">Anomalies</span>
+                        </button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" onclick="document.getElementById('chatInput').value='What is my energy efficiency score?'">
+                            <span data-en="Efficiency" data-de="Effizienz">Efficiency</span>
+                        </button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" onclick="document.getElementById('chatInput').value='Compare my energy usage to typical households'">
+                            <span data-en="Benchmark" data-de="Vergleich">Benchmark</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip"></div>
+</body>
+</html>
