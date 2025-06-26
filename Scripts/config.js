@@ -6,4 +6,4 @@
 // Local development fallback - this will be overridden in production
 if (typeof window.OPENAI_API_KEY === 'undefined') {
     window.OPENAI_API_KEY = null;
-} 
+}
