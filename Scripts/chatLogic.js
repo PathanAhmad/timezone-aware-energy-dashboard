@@ -8,6 +8,14 @@ class EnergyDataChat {
 
     async loadApiKey ( ) {
         try {
+            // First, check if API key is available from Render's environment variables (build-time injection)
+            if (typeof window.OPENAI_API_KEY !== 'undefined' && window.OPENAI_API_KEY) {
+                this.apiKey = window.OPENAI_API_KEY;
+                console.log('API key loaded from Render environment variables');
+                return { success: true };
+            }
+            
+            // Fallback to local .env file for development
             const response = await fetch ( '/.env' );
             if ( !response.ok ) {
                 console.warn ( 'Could not load .env file. Chat functionality will be disabled.' );
@@ -19,6 +27,7 @@ class EnergyDataChat {
             
             if ( apiKeyMatch && apiKeyMatch[1].trim ( ) ) {
                 this.apiKey = apiKeyMatch[1].trim ( );
+                console.log('API key loaded from local .env file');
                 return { success: true };
             } else {
                 console.warn ( 'OPENAI_API_KEY not found in .env file. Chat functionality will be disabled.' );
