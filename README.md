@@ -104,4 +104,4 @@ Timestamps are parsed using ISO 8601 (e.g. `YYYY-MM-DDTHH:mm:ssZ`) and converted
 
 ## Academic context
 
-Originally built as a course project (Foundations of Networked Systems) and later polished into a recruiter-facing portfolio piece. I implemented the dashboard end-to-end.
+Originally built as a course project (Foundations of Networked Systems).
