@@ -1,76 +1,88 @@
-## Team Collaboration
+# Energy Insights Dashboard (Vanilla JS + D3)
 
-This project was developed through close collaboration among team members, with each person contributing their expertise to different aspects of the system. We worked together to design the architecture, implement features, and ensure the final product meets our academic objectives while providing a valuable tool for energy data analysis.
+Interactive energy-consumption analytics for **15‑minute interval XML datasets**: timezone-aware charts, statistical summaries, and an optional AI assistant for natural-language questions.
 
-Our team approach involved:
-- Meetings to discuss progress and challenges
-- Code reviews and collaborative debugging sessions
-- Shared decision-making on technical approaches
-- Collective testing and quality assurance
-- Joint documentation and presentation preparation
+Repo: [`PathanAhmad/timezone-aware-energy-dashboard`](https://github.com/PathanAhmad/timezone-aware-energy-dashboard)
 
-## Key Features
+## About
 
-**Data Visualization**
-- Time series chart with interactive zoom and pan
-- Daily distribution bar chart showing hourly patterns
-- Box plot analysis for statistical distribution
-- Heatmap showing consumption intensity across time
-- Energy flow diagram (Sankey chart)
+- **What it is**: a single-page dashboard that turns raw 15‑minute energy XML into interactive insights.
+- **Who it’s for**: anyone who wants to explore consumption patterns (peaks, base load, daily totals) without uploading data to a server.
+- **Why it’s interesting**: combines robust XML parsing, timezone conversion, and multiple coordinated D3 visualizations in a framework-free codebase.
 
-**Timezone Support**
-- 60+ timezone options covering global regions
-- Automatic timezone detection
-- ISO 8601-1 compliant timestamps
-- Real-time data conversion between timezones
+## What this demonstrates (recruiter-friendly)
 
-**AI Chat Assistant**
-- OpenAI GPT integration for natural language queries
-- German and English language support
-- Context-aware responses based on data selected
-- Graceful handling when API key is unavailable
+- **Ownership**: built end-to-end (data parsing → visualization → UX polish → optional AI integration).
+- **Frontend engineering**: a full dashboard in **vanilla JavaScript** (ES modules), no framework.
+- **Data visualization**: multiple D3 views (distribution + trend + intensity + flow).
+- **Data parsing**: XML parsing + validation with safe fallbacks.
+- **Timezone UX**: view the same underlying UTC data in different display timezones.
+- **Product polish**: bilingual UI (English/German), responsive layout, printable “report”.
 
-**Multi-Country Data**
-- Artifical datasets for Germany, Portugal, and Estonia and an actual one for Austria
-- Country-specific energy consumption patterns
-- XML format support for easy integration
-- Custom data upload capability
+## Features
 
-## Technical Architecture
+- **Charts**
+  - Load duration curve
+  - Daily totals
+  - Hourly distribution (box plot + outliers)
+  - Heatmap (day × hour intensity)
+  - Sankey (energy flow breakdown)
+- **Datasets**
+  - Preloaded datasets for **Austria (real)** + **Germany/Portugal/Estonia (simulated)**
+  - Upload your own `.xml` file from the UI
+- **AI (optional)**
+  - Chat answers questions using a summary of the currently loaded dataset (OpenAI Chat Completions)
 
-**Frontend Stack**
-- Vanilla JavaScript (No frameworks as instructed)
-- D3.js for data visualization
-- Tailwind CSS for responsive design
-- HTML5 with semantic markup
+## Quick start (local)
 
-**Data Processing**
-- Custom XML parser for energy data
-- Comprehensive timezone utilities
-- Data validation and error handling
-- Efficient memory management
+1. Start a local server from the repo root:
 
-**AI Integration**
-- OpenAI API with GPT-3.5-Turbo, so it costs 0.5 EUR after hundreds of queries
-- Optimized prompts for energy analysis
-- Error handling and rate limiting
-- Secure API communication
+```bash
+python -m http.server 8000
+```
 
-## Why These Visualization Choices
+2. Open `http://localhost:8000` in your browser.
 
-**Time Series Chart**: Shows energy consumption patterns over time with interactive zoom and pan. This is the most intuitive way to see trends, peaks, and patterns in energy usage across different time periods.
+### Optional: enable AI chat locally
 
-**Daily Distribution Bar Chart**: Displays consumption patterns by hour of the day. This reveals daily routines, peak usage times, and helps identify when energy is consumed most heavily.
+This project loads the API key in one of two ways:
 
-**Box Plot Analysis**: Shows statistical distribution of energy usage by hour. This helps identify outliers, understand the spread of consumption values, and see which hours have the most variable usage.
+- **Build-time injection**: `Scripts/config.js` expects `window.OPENAI_API_KEY` to be set in production builds.
+- **Local dev fallback**: `Scripts/chatLogic.js` tries to `fetch('/.env')` and read `OPENAI_API_KEY=...`.
 
-**Heatmap Visualization**: Color-coded intensity map showing consumption patterns across time periods. This provides a quick visual overview of high and low consumption periods, making it easy to spot patterns at a glance.
+To enable AI chat **locally**, create a `/.env` file in the repo root:
 
-**Energy Flow Diagram (Sankey)**: Illustrates energy distribution and flow patterns. This helps understand how energy moves through different systems and where the main consumption occurs.
+```env
+OPENAI_API_KEY=your_key_here
+```
 
-## Data Format
+## Security note (important)
 
-The project uses standardized XML format for energy data:
+This is a **static frontend**. Any key provided to the browser can be extracted by a user.
+
+- **Do not deploy a real OpenAI key in client-side code.**
+- For a production-grade deployment, route AI calls through a small backend (proxy) that keeps secrets server-side and enforces rate limits.
+
+## Repo map
+
+```
+.
+├── index.html
+├── Scripts/
+│   ├── main.js            # dashboard orchestration + D3 charts
+│   ├── xmlParser.js       # XML parsing + timezone inference
+│   ├── timezoneUtils.js   # timezone conversion + detection
+│   ├── chatLogic.js       # OpenAI chat integration (optional)
+│   ├── languageContext.js # EN/DE UI support
+│   └── config.js          # build-time API key injection hook
+└── Data/
+    ├── myenergydata_output.xml
+    ├── data_germany.xml
+    ├── data_portugal.xml
+    └── data_estonia.xml
+```
+
+## Data format (example)
 
 ```xml
 <Publication_MarketDocument>
@@ -88,196 +100,8 @@ The project uses standardized XML format for energy data:
 </Publication_MarketDocument>
 ```
 
-All timestamps follow ISO 8601-1 standard (YYYY-MM-DDTHH:mm:ssZ) for international compatibility.
+Timestamps are parsed using ISO 8601 (e.g. `YYYY-MM-DDTHH:mm:ssZ`) and converted for display depending on the selected timezone.
 
-## Setup and Installation
+## Academic context
 
-**Prerequisites**
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- Python 3.x for local development server
-- OpenAI API key (optional for AI features)
-
-**Quick Start**
-1. Create .env file for AI features (optional):
-   ```
-   OPENAI_API_KEY=your_api_key_here
-   ```
-2. Start local server:
-   ```
-   python -m http.server 8000
-   ```
-3. Open http://localhost:8000 in your browser
-
-**Project Structure**
-```
-project/
-├── index.html              # Main application
-├── Scripts/                # JavaScript modules
-│   ├── main.js            # Core logic and charts
-│   ├── chatLogic.js       # AI chat functionality
-│   ├── xmlParser.js       # XML data processing
-│   ├── languageContext.js # German/English support
-│   └── timezoneUtils.js   # Timezone handling
-├── Data/                  # Sample datasets
-│   ├── myenergydata_output.xml  # Austria (real data)
-│   ├── data_germany.xml   # Germany (simulated)
-│   ├── data_portugal.xml  # Portugal (simulated)
-│   └── data_estonia.xml   # Estonia (simulated)
-├── .env                   # Environment variables
-└── README.md              # This file
-```
-
-## How to Use
-
-**Loading Data**
-- Click country buttons (Austria, Germany, Portugal, Estonia) for sample data
-- Upload your own XML files using the file input
-- System validates format automatically
-
-**Exploring Charts**
-- Time series: Hover for details, drag to zoom, double-click to reset
-- Distribution charts: Click legend to toggle series
-- Heatmap: Hover for exact values and time information
-- Box plot: Identify outliers and statistical patterns
-
-**Timezone Features**
-- Click "Detect My Timezone" for automatic setup
-- Select from 60+ global timezones manually
-- All charts update immediately on timezone change
-
-**AI Chat**
-- Ask questions like "What's my peak usage time?"
-- Request insights like "Show me patterns in my consumption"
-- Get technical explanations for data anomalies
-
-## Sample Datasets
-
-**Country Characteristics**
-- Austria (Vienna): Real energy consumption data from actual measurements
-- Germany: Artificial dataset with higher industrial usage during work hours
-- Portugal: Artificial dataset with elevated evening peaks (Mediterranean lifestyle)
-- Estonia: Artificial dataset with lower overall consumption (Nordic patterns)
-
-**Data Quality**
-- 14-day coverage for comprehensive analysis
-- 15-minute resolution for detailed insights
-- Realistic patterns based on typical consumption
-- Consistent XML format across all datasets
-
-## Performance and Compatibility
-
-**Optimizations**
-- Lazy loading for charts
-- Data caching in memory
-- Efficient D3.js rendering
-- Minimal dependencies
-
-**Browser Support**
-- Chrome 80+, Firefox 75+, Safari 13+, Edge 80+
-- ES6+ features (arrow functions, template literals)
-- Modern CSS (Grid, Flexbox)
-- Web APIs (Fetch, File, Intl)
-
-## Security and Privacy
-
-**Data Handling**
-- All processing happens client-side
-- Energy data never leaves your browser
-- API keys stored locally in .env file
-- Input validation and sanitization
-
-**AI Privacy**
-- Only current visualization state sent to OpenAI
-- No personal data transmitted
-- HTTPS-only API communication
-- Built-in rate limiting
-
-## Troubleshooting
-
-**Common Issues**
-1. Charts not loading: Check browser console for errors
-2. AI chat not working: Verify OpenAI API key in .env
-3. Timezone issues: Ensure browser supports Intl API
-4. File upload errors: Check XML format matches expected structure
-
-**Debugging**
-- Browser console shows detailed error messages
-- Network tab monitors API calls
-- Performance tab analyzes chart rendering
-
-## Academic Context
-
-**FNS Course Objectives**
-This project demonstrates:
-- Data visualization techniques
-- Modern web development
-- AI integration in energy analytics
-- Internationalization and timezone handling
-- API design and integration
-
-**Learning Outcomes**
-- Technical skills: JavaScript, D3.js, CSS, HTML5
-- Data analysis and pattern recognition
-- User experience design
-- Complete application development
-- Team collaboration and project management
-
-## Future Enhancements
-
-**Planned Features**
-- Real-time data with WebSocket integration
-- PDF reports and data export
-- Advanced analytics with machine learning
-- Progressive Web App capabilities
-
-**Technical Improvements**
-- Service workers for offline functionality
-- WebAssembly for performance-critical processing
-- WebGL for 3D visualizations
-- Microservices backend architecture
-
-## Development Guidelines
-
-**Code Quality**
-- Follow existing patterns and conventions
-- Update documentation for new features
-- Test across different browsers
-- Monitor and optimize performance
-
-**Best Practices**
-- Consistent code formatting
-- Clear documentation of complex logic
-- Modular component design
-- Comprehensive error handling
-
-## Licenses and Acknowledgments
-
-**Open Source**
-- D3.js: BSD-3-Clause License
-- Tailwind CSS: MIT License
-- Project Code: MIT License
-
-**Data Sources**
-- Sample data generated from typical consumption patterns
-- Country codes follow ISO 3166-1 alpha-2 standard
-- Timezone data from IANA Time Zone Database
-
-**AI Development Assistance**
-This project was developed with technical guidance from DeepSeek AI for:
-- Data visualization implementation
-- XML parsing and data processing
-- Timezone handling and conversion
-- AI integration and prompt engineering
-- Documentation and code structure
-
-The core functionality, design decisions, and academic objectives were established by our team, with DeepSeek providing technical assistance and implementation guidance.
-
-## Additional Credits
-
-- **Deepseek**: Used for resolving a few bugs during development.
-- **Prettier**: Used for code formatting and style consistency.
-- **ChatGPT**: Used for generating code comments and for help with language context logic.
-
----
-
-Built for the future of energy analytics and sustainable development through collaborative effort. 
+Originally built as a course project (Foundations of Networked Systems) and later polished into a recruiter-facing portfolio piece. I implemented the dashboard end-to-end.
